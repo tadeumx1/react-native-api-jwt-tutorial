@@ -3,84 +3,75 @@ import axios from 'axios'
 import { Alert } from 'react-native'
 
 import { getUser, navigate, deleteUser } from '../utils'
-// import AuthLoadingScreen from '../pages/AuthLoadingScreen'
 
 const api = axios.create({
+  baseURL: 'http://10.0.3.2:3000',
+  // baseURL: 'http://localhost:3000',
+  headers: {
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+  },
+});
 
-	baseURL: 'http://10.0.3.2:3000',
-	// baseURL: 'http://localhost:3000',
-    headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-    }
-
-})
-
-api.interceptors.response.use((response) => {
+api.interceptors.response.use(
+  response => {
 
     // Do something with response data
 
-	return response
-  }, (error) => {
+    return response;
+  },
+  error => {
 
-	// Do something with response error
-	
-	// You can even test for a response code
-	// and try a new request before rejecting the promise
+    // Do something with response error
 
-	if(error.request._hasError === true && error.request._response.includes("connect")) {
+    // You can even test for a response code
+    // and try a new request before rejecting the promise
 
-		Alert.alert(
-			'Aviso',
-			'Não foi possível conectar aos nossos servidores, sem conexão a internet',
-			[
-			  { text: 'OK' },
-			],
-			{ cancelable: false },
-		  )
+    if (
+      error.request._hasError === true &&
+      error.request._response.includes('connect')
+    ) {
+      Alert.alert(
+        'Aviso',
+        'Não foi possível conectar aos nossos servidores, sem conexão a internet',
+        [ { text: 'OK' } ],
+        { cancelable: false },
+      );
+    }
 
-	}
+    if (error.response.status === 401) {
+      const requestConfig = error.config;
 
-	if (error.response.status === 401) {
-	  const requestConfig = error.config
+      // O token JWT expirou
 
-	  // O token JWT expirou
+      deleteUser().then(() => {
+        navigate('AuthLoading', {});
+      });
 
-	  deleteUser()
-		.then(() => {
+      return axios(requestConfig);
+    }
 
-			navigate('AuthLoading', {})
-
-			// return <AuthLoadingScreen />
-
-		})
-
-	  return axios(requestConfig)
-
-	}
-
-	return Promise.reject(error)
-
-})
+    return Promise.reject(error);
+  },
+);
 
 api.interceptors.request.use(
-	(config) => {
-		return getUser()
-			.then(user => {
-				user = JSON.parse(user)
-				if (user && user.token)
-					config.headers.Authorization = `Bearer ${user.token}`
-				return Promise.resolve(config)
-			})
-			.catch(error => {
-				console.tron.log('ERRO NO CATCH DO GET USER INTERCEPTOR')
-				console.tron.log(error)
-				return Promise.resolve(config)
-			})
-	},
-	error => {
-		return Promise.reject(error)
-	}
-)
+  config => {
+    return getUser()
+      .then(user => {
+        user = JSON.parse(user);
+        if (user && user.token)
+          config.headers.Authorization = `Bearer ${user.token}`;
+        return Promise.resolve(config);
+      })
+      .catch(error => {
+        console.log(error);
+        return Promise.resolve(config);
+      });
+  },
+  error => {
+    return Promise.reject(error);
+  },
+);
 
-export default api
+export default api;

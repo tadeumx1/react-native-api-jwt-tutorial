@@ -1,14 +1,14 @@
-import React, { useEffect } from 'react';
+import React, { useEffect } from 'react'
 
-import { View, AsyncStorage, ActivityIndicator } from 'react-native';
+import { View, AsyncStorage, ActivityIndicator } from 'react-native'
 
 export default function AuthLoadingScreen(props) {
 
   useEffect(() => {
     async function handleUserNextScreen() {
-      const userToken = await AsyncStorage.getItem('@ListApp:userToken');
+      const userToken = await AsyncStorage.getItem('@ListApp:userToken')
 
-      props.navigation.navigate(userToken ? 'App' : 'Auth');
+      props.navigation.navigate(userToken ? 'App' : 'Auth')
     }
 
     handleUserNextScreen();
