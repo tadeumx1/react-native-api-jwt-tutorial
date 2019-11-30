@@ -14,8 +14,6 @@ export default function AuthLoadingScreen(props) {
     handleUserNextScreen();
   }, []);
 
-  // if(!userChecked) return null;
-
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <ActivityIndicator size="large" color="#00ff00" />
